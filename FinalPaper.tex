@@ -4,6 +4,8 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algorithmic}
 
 \begin{document}
 
@@ -38,5 +40,81 @@ This report looks to employ biological and statistical techniques to characteriz
 \begin{center}
 \textbf{Key Words}: epidemiology, SIR Modeling, pathogen, population dynamics, Monte Carlo simulation 
 \end{center}
+
+\section{Other Sections}
+
+\section{Spatiotemporal Simulations}
+
+[Stuff About the Monte Carlo Sims]
+
+
+\begin{algorithm}
+\caption{Simulation for Basic SIR Model}
+\begin{algorithmic} 
+\REQUIRE $S_{t} + I_{t} + R_{t} = N \text{   } \forall t \wedge N,T \in \mathbb{Z}_{+}$
+
+\STATE $x_{1}, x_{2}, ..., x_{N} \sim \mathcal{U}(\text{xmin}, \text{xmax})$
+
+\STATE $y_{1}, y_{2}, ..., y_{N} \sim \mathcal{U}(\text{ymin}, \text{ymax})$
+
+\STATE $s_{1}, s_{2}, ..., s_{N} := \begin{cases} S & 1 \leq i \leq S_{t=0} \\ I & S_{t=0} < i \leq S_{t=0} + I_{t=0} \\ R & \text{otherwise}  \end{cases}$
+
+\STATE $\text{Res} \leftarrow [0]^{N \times 3}$
+\STATE t = 1
+\WHILE {$t \leq T$}
+
+\STATE $m_{1}, m_{2}, ..., m_{N} \sim \textit{Bern}(p_{\text{move}})$
+
+\FOR {$i = 1, i \leq N$}
+\IF{$m_{i}$} 
+\STATE $x_{i} \leftarrow x_{i} + \mathcal{N}(0,1)$
+\STATE $y_{i} \leftarrow y_{i} + \mathcal{N}(0,1)$
+\ENDIF
+\ENDFOR
+\STATE $\text{D} \leftarrow [0]^{N \times N}$
+
+\FOR {$i \in [1,N]\cap \mathbb{Z}$}
+\FOR {$j \in [1,N]\cap \mathbb{Z}$}
+\STATE $D_{i,j} = \sqrt{(x_{i} - x_{j})^{2} + (y_{i} - y_{j})^{2}}$
+\ENDFOR
+\ENDFOR
+\FOR {$i \in [1,N] \cap \mathbb{Z}$}
+\FOR {$j \in [i+1,N] \cap \mathbb{Z}$}
+\IF{$(s_{i} = I \vee s_{j} = I) \wedge D_{i,j} < d_{\text{thresh}} $}
+\STATE $\lambda_{inf} = |D_{i,j} - d_{\text{thresh}}|$
+\ENDIF
+
+\STATE $\text{infect} \leftarrow \text{Pois}(\lambda_{inf})$
+\IF{$\text{permanent immunity}$} 
+\STATE $\text{infect = 0}$
+\ELSIF{$s_{i} = R \vee s_{j} = R$}
+\STATE $\lambda \leftarrow r_{\text{inf}} * \lambda_{inf}$
+\STATE $\text{infect} \leftarrow \text{Pois}(\lambda_{inf})$
+\ENDIF
+
+\IF{$\text{infect} \geq \textit{inf}_{\text{thresh}}$}
+\STATE $s_{i} = s_{j} = I$
+\ENDIF
+\ENDFOR
+\ENDFOR
+\FOR {$i \in [1,N] \cap \mathbb{Z}$}
+\IF{$s_{i} = I \wedge \text{Pois}(\lambda_{rec}) \geq \textit{rec}_{\text{thresh}}$}
+\STATE $s_{i} = R$
+\ENDIF
+\ENDFOR
+
+\STATE $n_{S} = \sum_{i=1}^{N} I[s_{i} = S]$
+\STATE $n_{I} = \sum_{i=1}^{N} I[s_{i} = I]$
+\STATE $n_{R} = \sum_{i=1}^{N} I[s_{i} = R]$ 
+\STATE $\text{Res}_{t,1} \leftarrow n_{S}$
+\STATE $\text{Res}_{t,2} \leftarrow n_{I}$
+\STATE $\text{Res}_{t,3} \leftarrow n_{R}$
+\STATE $t \leftarrow t + 1 $
+\ENDWHILE 
+
+\RETURN $\text{Res}$
+
+\end{algorithmic}
+\end{algorithm}
 
 \end{document}
